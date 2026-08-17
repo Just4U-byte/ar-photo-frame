@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- A-Frame 1.4.2 & MindAR 1.2.2 -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #000;
+      }
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.75);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+      }
+      #startBtn {
+        padding: 16px 32px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background: #2563eb;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      }
+      #promptText {
+        color: #fff;
+        font-family: sans-serif;
+        margin-top: 15px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Tap overlay to start video with sound -->
+    <div id="overlay">
+      <button id="startBtn">Tap to Start AR</button>
+      <p id="promptText">Grant camera permission when asked</p>
+    </div>
+
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: yes; uiScanning: yes;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets>
+        <video
+          id="memoryVideo"
+          src="./video.mp4"
+          preload="auto"
+          loop
+          crossorigin="anonymous"
+          playsinline
+          webkit-playsinline
+        ></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- 4:3 ratio: width 1, height 0.75 -->
+        <a-video
+          src="#memoryVideo"
+          position="0 0 0"
+          height="0.75"
+          width="1"
+          rotation="0 0 0"
+        ></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const overlay = document.getElementById('overlay');
+      const startBtn = document.getElementById('startBtn');
+      const video = document.getElementById('memoryVideo');
+
+      startBtn.addEventListener('click', () => {
+        video.play().then(() => {
+          overlay.style.display = 'none';
+        }).catch((err) => {
+          console.warn("Autoplay audio waiting for interaction:", err);
+          overlay.style.display = 'none';
+        });
+      });
+    </script>
+  </body>
+</html>
