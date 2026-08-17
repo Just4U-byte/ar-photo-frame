@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- A-Frame 1.4.2 & MindAR 1.2.2 -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
@@ -46,7 +45,6 @@
   </head>
 
   <body>
-    <!-- Tap overlay to start video with sound -->
     <div id="overlay">
       <button id="startBtn">Tap to Start AR</button>
       <p id="promptText">Grant camera permission when asked</p>
@@ -60,10 +58,21 @@
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
+        <!-- Spider Video -->
         <video
-          id="memoryVideo"
+          id="spiderVid"
+          src="./spider.mp4"
+          preload="none"
+          loop
+          crossorigin="anonymous"
+          playsinline
+          webkit-playsinline
+        ></video>
+        <!-- First Video -->
+        <video
+          id="firstVid"
           src="./video.mp4"
-          preload="auto"
+          preload="none"
           loop
           crossorigin="anonymous"
           playsinline
@@ -73,10 +82,21 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 4:3 ratio: width 1, height 0.75 -->
+      <!-- Target 0: Spider (Image 1 in Compiler) -->
+      <a-entity id="targetSpider" mindar-image-target="targetIndex: 0">
         <a-video
-          src="#memoryVideo"
+          src="#spiderVid"
+          position="0 0 0"
+          height="0.75"
+          width="1"
+          rotation="0 0 0"
+        ></a-video>
+      </a-entity>
+
+      <!-- Target 1: First Photo (Image 2 in Compiler) -->
+      <a-entity id="targetFirst" mindar-image-target="targetIndex: 1">
+        <a-video
+          src="#firstVid"
           position="0 0 0"
           height="0.75"
           width="1"
@@ -88,15 +108,33 @@
     <script>
       const overlay = document.getElementById('overlay');
       const startBtn = document.getElementById('startBtn');
-      const video = document.getElementById('memoryVideo');
+      const spiderVid = document.getElementById('spiderVid');
+      const firstVid = document.getElementById('firstVid');
+
+      const targetSpider = document.getElementById('targetSpider');
+      const targetFirst = document.getElementById('targetFirst');
 
       startBtn.addEventListener('click', () => {
-        video.play().then(() => {
-          overlay.style.display = 'none';
-        }).catch((err) => {
-          console.warn("Autoplay audio waiting for interaction:", err);
-          overlay.style.display = 'none';
-        });
+        // Unlock autoplay restrictions on mobile browsers
+        spiderVid.play().then(() => spiderVid.pause()).catch(() => {});
+        firstVid.play().then(() => firstVid.pause()).catch(() => {});
+        overlay.style.display = 'none';
+      });
+
+      // Target 0: Spider Image Events
+      targetSpider.addEventListener('targetFound', () => {
+        spiderVid.play();
+      });
+      targetSpider.addEventListener('targetLost', () => {
+        spiderVid.pause();
+      });
+
+      // Target 1: First Photo Events
+      targetFirst.addEventListener('targetFound', () => {
+        firstVid.play();
+      });
+      targetFirst.addEventListener('targetLost', () => {
+        firstVid.pause();
       });
     </script>
   </body>
