@@ -1,64 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AR Experience</title>
+    <!-- A-Frame 1.4.2 & MindAR 1.2.2 -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-      body {
+      * {
+        box-sizing: border-box;
         margin: 0;
-        overflow: hidden;
-        background-color: #000;
+        padding: 0;
+        user-select: none;
+        -webkit-user-select: none;
       }
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #000;
+        overflow: hidden;
+      }
+
+      /* Splash / Start Screen */
       #overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.85);
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(18, 24, 38, 0.92) 0%, rgba(5, 7, 13, 0.98) 100%);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         z-index: 99999;
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+        padding: 24px;
       }
-      #startBtn {
-        padding: 16px 36px;
-        font-size: 16px;
-        font-weight: bold;
-        color: #fff;
-        background: #2563eb;
-        border: none;
-        border-radius: 30px;
-        cursor: pointer;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      #overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
       }
-      #promptText {
+
+      .card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 28px;
+        padding: 36px 28px;
+        text-align: center;
+        max-width: 360px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .icon-box {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.35);
+      }
+      .icon-box svg {
+        width: 32px;
+        height: 32px;
+        fill: #fff;
+      }
+
+      h1 {
         color: #fff;
-        font-family: sans-serif;
-        margin-top: 15px;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+      }
+      p.subtitle {
+        color: #94a3b8;
         font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 28px;
+      }
+
+      #startBtn {
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, #4f46e5, #9333ea);
+        border: none;
+        border-radius: 18px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+      }
+      #startBtn:active {
+        transform: scale(0.97);
+      }
+
+      /* In-AR HUD Layer */
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 20px 36px;
+      }
+
+      /* Status Badge */
+      .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 8px 16px;
+        border-radius: 30px;
+        color: #f8fafc;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #eab308;
+        animation: pulse 1.5s infinite;
+      }
+      .dot.active {
+        background: #22c55e;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(0.9); opacity: 0.7; }
+        50% { transform: scale(1.3); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0.7; }
+      }
+
+      /* Target Scanning Frame */
+      #reticle {
+        position: relative;
+        width: 220px;
+        height: 220px;
+        border: 2px dashed rgba(255, 255, 255, 0.25);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.3s;
+      }
+      #reticle.hidden {
+        opacity: 0;
+      }
+      .scan-laser {
+        position: absolute;
+        width: 90%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #a855f7, #6366f1, transparent);
+        box-shadow: 0 0 12px #a855f7;
+        animation: scan 2s infinite ease-in-out;
+      }
+      @keyframes scan {
+        0% { top: 10%; opacity: 0.3; }
+        50% { top: 90%; opacity: 1; }
+        100% { top: 10%; opacity: 0.3; }
       }
     </style>
   </head>
 
   <body>
+    <!-- Start Experience Dialog -->
     <div id="overlay">
-      <button id="startBtn">Tap to Start AR</button>
-      <p id="promptText">Grant camera permission when asked</p>
+      <div class="card">
+        <div class="icon-box">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h1>Interactive Frame</h1>
+        <p class="subtitle">Experience photos coming to life with AR video and spatial sound.</p>
+        <button id="startBtn">Launch Experience</button>
+      </div>
     </div>
 
+    <!-- Active Camera HUD -->
+    <div id="hud">
+      <div class="status-pill">
+        <span id="statusDot" class="dot"></span>
+        <span id="statusText">Scanning for target...</span>
+      </div>
+
+      <div id="reticle">
+        <div class="scan-laser"></div>
+      </div>
+
+      <div></div>
+    </div>
+
+    <!-- AR Scene Container with Performance Optimizations -->
     <a-scene
-      mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: yes; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;"
+      mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001; warmupTolerance: 1; missTolerance: 3;"
       color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
+      renderer="antialias: false; precision: medium; powerPreference: high-performance;"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
-        <!-- Landscape Animation Video (1920x1080) -->
         <video
           id="cardVid"
           src="./video.mp4"
@@ -68,8 +224,6 @@
           playsinline
           webkit-playsinline
         ></video>
-
-        <!-- Spider Video (1920x900) -->
         <video
           id="spiderVid"
           src="./spider.mp4"
@@ -83,7 +237,7 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Target 0: Queen Card (Rotated 90 deg for Landscape Video) -->
+      <!-- Target 0: Queen Card (Rotated 90 deg Landscape) -->
       <a-entity id="targetCard" mindar-image-target="targetIndex: 0">
         <a-video
           src="#cardVid"
@@ -94,7 +248,7 @@
         ></a-video>
       </a-entity>
 
-      <!-- Target 1: Spider Target (Exact 1920x900 Aspect Ratio) -->
+      <!-- Target 1: Spider Target (1920x900 Movie Aspect) -->
       <a-entity id="targetSpider" mindar-image-target="targetIndex: 1">
         <a-video
           src="#spiderVid"
@@ -109,25 +263,49 @@
     <script>
       const overlay = document.getElementById('overlay');
       const startBtn = document.getElementById('startBtn');
+      const statusText = document.getElementById('statusText');
+      const statusDot = document.getElementById('statusDot');
+      const reticle = document.getElementById('reticle');
+
       const cardVid = document.getElementById('cardVid');
       const spiderVid = document.getElementById('spiderVid');
-
       const targetCard = document.getElementById('targetCard');
       const targetSpider = document.getElementById('targetSpider');
 
       startBtn.addEventListener('click', () => {
+        // Unlock autoplay permissions smoothly
         cardVid.play().then(() => cardVid.pause()).catch(() => {});
         spiderVid.play().then(() => spiderVid.pause()).catch(() => {});
-        overlay.style.display = 'none';
+        overlay.classList.add('hidden');
       });
 
-      // Target 0: Queen Card Events
-      targetCard.addEventListener('targetFound', () => cardVid.play());
-      targetCard.addEventListener('targetLost', () => cardVid.pause());
+      // Target 0 (Card) Tracking Events
+      targetCard.addEventListener('targetFound', () => {
+        cardVid.play();
+        statusText.textContent = 'Memory Playing';
+        statusDot.classList.add('active');
+        reticle.classList.add('hidden');
+      });
+      targetCard.addEventListener('targetLost', () => {
+        cardVid.pause();
+        statusText.textContent = 'Scanning for target...';
+        statusDot.classList.remove('active');
+        reticle.classList.remove('hidden');
+      });
 
-      // Target 1: Spider Target Events
-      targetSpider.addEventListener('targetFound', () => spiderVid.play());
-      targetSpider.addEventListener('targetLost', () => spiderVid.pause());
+      // Target 1 (Spider) Tracking Events
+      targetSpider.addEventListener('targetFound', () => {
+        spiderVid.play();
+        statusText.textContent = 'Spider Video Playing';
+        statusDot.classList.add('active');
+        reticle.classList.add('hidden');
+      });
+      targetSpider.addEventListener('targetLost', () => {
+        spiderVid.pause();
+        statusText.textContent = 'Scanning for target...';
+        statusDot.classList.remove('active');
+        reticle.classList.remove('hidden');
+      });
     </script>
   </body>
 </html>
