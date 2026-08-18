@@ -1,119 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>AR Video Reveal</title>
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-<style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
-  #startOverlay {
-    position: fixed; inset: 0; z-index: 999;
-    background: #000; color: #fff;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 20px;
-  }
-  #startOverlay h1 { font-size: 20px; margin-bottom: 8px; }
-  #startOverlay p { font-size: 14px; opacity: .7; margin-bottom: 24px; max-width: 320px; }
-  #startBtn {
-    padding: 14px 34px; font-size: 16px; border: none; border-radius: 30px;
-    background: #ff2d55; color: #fff; font-weight: bold; cursor: pointer;
-  }
-  #hint {
-    position: fixed; bottom: 20px; left: 0; right: 0; text-align: center;
-    color: #fff; font-size: 13px; opacity: .8; z-index: 10; pointer-events: none;
-    text-shadow: 0 1px 4px rgba(0,0,0,.8);
-  }
-  .a-enter-vr { display: none !important; }
-</style>
-</head>
-<body>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
-<div id="startOverlay">
-  <h1>AR Video Reveal</h1>
-  <p>Point your camera at the Queen of Clubs card or the crowd photo to see the video play on top of it.</p>
-  <button id="startBtn">Start Camera</button>
-</div>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #000;
+      }
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+      }
+      #startBtn {
+        padding: 16px 32px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background: #2563eb;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      }
+      #promptText {
+        color: #fff;
+        font-family: sans-serif;
+        margin-top: 15px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
 
-<div id="hint">Scanning for target…</div>
+  <body>
+    <div id="overlay">
+      <button id="startBtn">Tap to Start AR</button>
+      <p id="promptText">Grant camera permission when asked</p>
+    </div>
 
-<a-scene
-  mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
-  color-space="sRGB"
-  renderer="colorManagement: true, physicallyCorrectLights"
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: false"
-  embedded
->
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: yes; uiScanning: yes;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets>
+        <!-- Card Deck Video -->
+        <video
+          id="cardVid"
+          src="./video.mp4"
+          preload="none"
+          loop
+          crossorigin="anonymous"
+          playsinline
+          webkit-playsinline
+        ></video>
 
-  <a-assets>
-    <!-- targetIndex 0: Queen of Clubs card -->
-    <video id="video-card" src="./video.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <!-- targetIndex 1: crowd / spider-man photo -->
-    <video id="video-crowd" src="./spider.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
-  </a-assets>
+        <!-- Spider Video -->
+        <video
+          id="spiderVid"
+          src="./spider.mp4"
+          preload="none"
+          loop
+          crossorigin="anonymous"
+          playsinline
+          webkit-playsinline
+        ></video>
+      </a-assets>
 
-  <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-  <!-- TARGET 0: Queen of Clubs card (portrait, standard card ratio ~0.714:1) -->
-  <a-entity id="target0" mindar-image-target="targetIndex: 0">
-    <a-video
-      src="#video-card"
-      width="1"
-      height="1.4"
-      position="0 0 0"
-      rotation="0 0 0">
-    </a-video>
-  </a-entity>
+      <!-- Target 0: Queen Playing Card (Image 1 in Compiler) -->
+      <a-entity id="targetCard" mindar-image-target="targetIndex: 0">
+        <a-video
+          src="#cardVid"
+          position="0 0 0"
+          width="1"
+          height="1.40"
+          rotation="0 0 0"
+        ></a-video>
+      </a-entity>
 
-  <!-- TARGET 1: crowd / spider-man photo (landscape, widescreen still ~1.78:1) -->
-  <a-entity id="target1" mindar-image-target="targetIndex: 1">
-    <a-video
-      src="#video-crowd"
-      width="1"
-      height="0.5625"
-      position="0 0 0"
-      rotation="0 0 0">
-    </a-video>
-  </a-entity>
+      <!-- Target 1: Spider / Man Standing (Image 2 in Compiler) -->
+      <a-entity id="targetSpider" mindar-image-target="targetIndex: 1">
+        <a-video
+          src="#spiderVid"
+          position="0 0 0"
+          width="1"
+          height="0.418"
+          rotation="0 0 0"
+        ></a-video>
+      </a-entity>
+    </a-scene>
 
-</a-scene>
+    <script>
+      const overlay = document.getElementById('overlay');
+      const startBtn = document.getElementById('startBtn');
+      const cardVid = document.getElementById('cardVid');
+      const spiderVid = document.getElementById('spiderVid');
 
-<script>
-  const sceneEl = document.querySelector('a-scene');
-  const startOverlay = document.getElementById('startOverlay');
-  const startBtn = document.getElementById('startBtn');
-  const hint = document.getElementById('hint');
+      const targetCard = document.getElementById('targetCard');
+      const targetSpider = document.getElementById('targetSpider');
 
-  const videoCard = document.getElementById('video-card');
-  const videoCrowd = document.getElementById('video-crowd');
-  const target0 = document.getElementById('target0');
-  const target1 = document.getElementById('target1');
+      startBtn.addEventListener('click', () => {
+        // Unlock autoplay permissions
+        cardVid.play().then(() => cardVid.pause()).catch(() => {});
+        spiderVid.play().then(() => spiderVid.pause()).catch(() => {});
+        overlay.style.display = 'none';
+      });
 
-  function wireTarget(targetEl, videoEl, label) {
-    targetEl.addEventListener('targetFound', () => {
-      hint.textContent = label + ' found';
-      videoEl.currentTime = 0;
-      videoEl.play();
-    });
-    targetEl.addEventListener('targetLost', () => {
-      hint.textContent = 'Scanning for target…';
-      videoEl.pause();
-    });
-  }
+      // Target 0: Queen Card Events
+      targetCard.addEventListener('targetFound', () => {
+        cardVid.play();
+      });
+      targetCard.addEventListener('targetLost', () => {
+        cardVid.pause();
+      });
 
-  wireTarget(target0, videoCard, 'Card');
-  wireTarget(target1, videoCrowd, 'Crowd photo');
-
-  // Wait for a real tap before starting camera/AR — this also unlocks
-  // audio playback on iOS/Android so the videos can play WITH sound.
-  startBtn.addEventListener('click', () => {
-    startOverlay.style.display = 'none';
-    const arSystem = sceneEl.systems['mindar-image'];
-    arSystem.start(); // starts camera + tracking
-  });
-</script>
-
-</body>
+      // Target 1: Spider Image Events
+      targetSpider.addEventListener('targetFound', () => {
+        spiderVid.play();
+      });
+      targetSpider.addEventListener('targetLost', () => {
+        spiderVid.pause();
+      });
+    </script>
+  </body>
 </html>
