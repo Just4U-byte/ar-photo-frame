@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>AR Experience</title>
     <!-- A-Frame 1.4.2 & MindAR 1.2.2 -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- SF Pro Display Fallback Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
       * {
@@ -17,92 +18,118 @@
         -webkit-user-select: none;
       }
       body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Plus Jakarta Sans', sans-serif;
         background-color: #000;
         overflow: hidden;
+        color: #fff;
       }
 
-      /* Splash / Start Screen */
+      /* iOS Liquid Crystal Blur Backdrop */
       #overlay {
         position: fixed;
         inset: 0;
-        background: radial-gradient(circle at center, rgba(18, 24, 38, 0.92) 0%, rgba(5, 7, 13, 0.98) 100%);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.65) 100%);
+        backdrop-filter: blur(35px) saturate(190%);
+        -webkit-backdrop-filter: blur(35px) saturate(190%);
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         z-index: 99999;
-        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
         padding: 24px;
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
       }
       #overlay.hidden {
         opacity: 0;
-        visibility: hidden;
+        transform: scale(1.04);
         pointer-events: none;
       }
 
-      .card {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 28px;
-        padding: 36px 28px;
-        text-align: center;
-        max-width: 360px;
+      /* iOS Floating Glass Card */
+      .glass-panel {
+        position: relative;
         width: 100%;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        max-width: 340px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(40px) saturate(200%);
+        -webkit-backdrop-filter: blur(40px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-top: 1.5px solid rgba(255, 255, 255, 0.65);
+        border-radius: 36px;
+        padding: 34px 26px 30px;
+        text-align: center;
+        box-shadow: 
+          0 30px 60px rgba(0, 0, 0, 0.4),
+          inset 0 1px 2px rgba(255, 255, 255, 0.4),
+          inset 0 -1px 2px rgba(0, 0, 0, 0.2);
       }
 
-      .icon-box {
-        width: 64px;
-        height: 64px;
-        border-radius: 20px;
-        background: linear-gradient(135deg, #6366f1, #a855f7);
+      /* Glass Orb Icon */
+      .glass-orb {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.05) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-top: 1.5px solid rgba(255, 255, 255, 0.85);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 20px;
-        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.35);
+        margin: 0 auto 22px;
+        box-shadow: 
+          0 15px 35px rgba(0, 0, 0, 0.25),
+          inset 0 2px 4px rgba(255, 255, 255, 0.6);
       }
-      .icon-box svg {
+      .glass-orb svg {
         width: 32px;
         height: 32px;
-        fill: #fff;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.4));
       }
 
       h1 {
-        color: #fff;
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: -0.5px;
+        font-size: 21px;
+        font-weight: 600;
+        letter-spacing: -0.4px;
+        color: #ffffff;
         margin-bottom: 8px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
       p.subtitle {
-        color: #94a3b8;
-        font-size: 14px;
-        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13.5px;
+        line-height: 1.45;
+        letter-spacing: -0.1px;
         margin-bottom: 28px;
       }
 
+      /* iOS Specular Glass Button */
       #startBtn {
         width: 100%;
-        padding: 16px 24px;
+        padding: 16px 20px;
         font-size: 15px;
-        font-weight: 700;
-        color: #fff;
-        background: linear-gradient(135deg, #4f46e5, #9333ea);
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        color: #000;
+        background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
         border: none;
-        border-radius: 18px;
+        border-radius: 22px;
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        box-shadow: 
+          0 10px 25px rgba(0, 0, 0, 0.25),
+          0 2px 4px rgba(255, 255, 255, 0.8) inset;
+        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
       }
       #startBtn:active {
-        transform: scale(0.97);
+        transform: scale(0.96);
+        opacity: 0.88;
       }
 
-      /* In-AR HUD Layer */
+      /* Dynamic Island Style HUD Status Pill */
       #hud {
         position: fixed;
         inset: 0;
@@ -112,101 +139,120 @@
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
-        padding: 24px 20px 36px;
+        padding: calc(env(safe-area-inset-top, 20px) + 12px) 20px 40px;
       }
 
-      /* Status Badge */
-      .status-pill {
+      .island-pill {
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: rgba(15, 23, 42, 0.75);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        padding: 8px 16px;
-        border-radius: 30px;
-        color: #f8fafc;
-        font-size: 13px;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        gap: 10px;
+        background: rgba(20, 20, 25, 0.45);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-top: 1.2px solid rgba(255, 255, 255, 0.45);
+        padding: 8px 18px;
+        border-radius: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       }
+      .island-pill span {
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: -0.2px;
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      /* Glass Orb Indicator Dot */
       .dot {
-        width: 8px;
-        height: 8px;
+        width: 7px;
+        height: 7px;
         border-radius: 50%;
-        background: #eab308;
-        animation: pulse 1.5s infinite;
+        background: #38bdf8;
+        box-shadow: 0 0 10px #38bdf8;
+        animation: breath 2s infinite ease-in-out;
       }
       .dot.active {
-        background: #22c55e;
+        background: #4ade80;
+        box-shadow: 0 0 12px #4ade80;
+      }
+      @keyframes breath {
+        0%, 100% { opacity: 0.4; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.2); }
       }
 
-      @keyframes pulse {
-        0% { transform: scale(0.9); opacity: 0.7; }
-        50% { transform: scale(1.3); opacity: 1; }
-        100% { transform: scale(0.9); opacity: 0.7; }
-      }
-
-      /* Target Scanning Frame */
+      /* iOS Minimalist Target Brackets */
       #reticle {
         position: relative;
-        width: 220px;
-        height: 220px;
-        border: 2px dashed rgba(255, 255, 255, 0.25);
-        border-radius: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.3s;
+        width: 210px;
+        height: 210px;
+        transition: opacity 0.4s ease, transform 0.4s ease;
       }
       #reticle.hidden {
         opacity: 0;
+        transform: scale(0.92);
       }
-      .scan-laser {
+      .bracket {
         position: absolute;
-        width: 90%;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #a855f7, #6366f1, transparent);
-        box-shadow: 0 0 12px #a855f7;
-        animation: scan 2s infinite ease-in-out;
+        width: 22px;
+        height: 22px;
+        border-color: rgba(255, 255, 255, 0.6);
+        border-style: solid;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
       }
-      @keyframes scan {
-        0% { top: 10%; opacity: 0.3; }
-        50% { top: 90%; opacity: 1; }
-        100% { top: 10%; opacity: 0.3; }
+      .tl { top: 0; left: 0; border-width: 2.5px 0 0 2.5px; border-top-left-radius: 12px; }
+      .tr { top: 0; right: 0; border-width: 2.5px 2.5px 0 0; border-top-right-radius: 12px; }
+      .bl { bottom: 0; left: 0; border-width: 0 0 2.5px 2.5px; border-bottom-left-radius: 12px; }
+      .br { bottom: 0; right: 0; border-width: 0 2.5px 2.5px 0; border-bottom-right-radius: 12px; }
+
+      .crystal-scanner {
+        position: absolute;
+        inset: 4px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 80%);
+        border-radius: 8px;
+        animation: scanSweep 2.2s infinite ease-in-out;
+      }
+      @keyframes scanSweep {
+        0% { transform: translateY(-10%); opacity: 0.1; }
+        50% { transform: translateY(60%); opacity: 0.8; }
+        100% { transform: translateY(-10%); opacity: 0.1; }
       }
     </style>
   </head>
 
   <body>
-    <!-- Start Experience Dialog -->
+    <!-- iOS Specular Glass Launch Sheet -->
     <div id="overlay">
-      <div class="card">
-        <div class="icon-box">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <div class="glass-panel">
+        <div class="glass-orb">
+          <svg viewBox="0 0 24 24">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+          </svg>
         </div>
-        <h1>Interactive Frame</h1>
-        <p class="subtitle">Experience photos coming to life with AR video and spatial sound.</p>
-        <button id="startBtn">Launch Experience</button>
+        <h1>Spatial Memory</h1>
+        <p class="subtitle">Look at the framed photo to unlock spatial video playback.</p>
+        <button id="startBtn">Enter AR</button>
       </div>
     </div>
 
-    <!-- Active Camera HUD -->
+    <!-- iOS Dynamic Island HUD Layer -->
     <div id="hud">
-      <div class="status-pill">
-        <span id="statusDot" class="dot"></span>
-        <span id="statusText">Scanning for target...</span>
+      <div class="island-pill">
+        <div id="statusDot" class="dot"></div>
+        <span id="statusText">Scanning for target</span>
       </div>
 
       <div id="reticle">
-        <div class="scan-laser"></div>
+        <div class="bracket tl"></div>
+        <div class="bracket tr"></div>
+        <div class="bracket bl"></div>
+        <div class="bracket br"></div>
+        <div class="crystal-scanner"></div>
       </div>
 
       <div></div>
     </div>
 
-    <!-- AR Scene Container with Performance Optimizations -->
     <a-scene
       mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001; warmupTolerance: 1; missTolerance: 3;"
       color-space="sRGB"
@@ -215,48 +261,20 @@
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
-        <video
-          id="cardVid"
-          src="./video.mp4"
-          preload="none"
-          loop
-          crossorigin="anonymous"
-          playsinline
-          webkit-playsinline
-        ></video>
-        <video
-          id="spiderVid"
-          src="./spider.mp4"
-          preload="none"
-          loop
-          crossorigin="anonymous"
-          playsinline
-          webkit-playsinline
-        ></video>
+        <video id="cardVid" src="./video.mp4" preload="metadata" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <video id="spiderVid" src="./spider.mp4" preload="metadata" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Target 0: Queen Card (Rotated 90 deg Landscape) -->
+      <!-- Target 0 (Card: Landscape Rotated) -->
       <a-entity id="targetCard" mindar-image-target="targetIndex: 0">
-        <a-video
-          src="#cardVid"
-          position="0 0 0"
-          width="1.58"
-          height="0.888"
-          rotation="0 0 -90"
-        ></a-video>
+        <a-video id="cardVideoPlane" src="#cardVid" position="0 0 0" rotation="0 0 -90"></a-video>
       </a-entity>
 
-      <!-- Target 1: Spider Target (1920x900 Movie Aspect) -->
+      <!-- Target 1 (Spider Target) -->
       <a-entity id="targetSpider" mindar-image-target="targetIndex: 1">
-        <a-video
-          src="#spiderVid"
-          position="0 0 0"
-          width="1"
-          height="0.46875"
-          rotation="0 0 0"
-        ></a-video>
+        <a-video id="spiderVideoPlane" src="#spiderVid" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
     </a-scene>
 
@@ -269,31 +287,56 @@
 
       const cardVid = document.getElementById('cardVid');
       const spiderVid = document.getElementById('spiderVid');
+      const cardPlane = document.getElementById('cardVideoPlane');
+      const spiderPlane = document.getElementById('spiderVideoPlane');
+
       const targetCard = document.getElementById('targetCard');
       const targetSpider = document.getElementById('targetSpider');
 
+      // Auto-Adjust Aspect Ratio Hook
+      function autoAdjustPlane(videoEl, planeEl, isRotated = false) {
+        const adjust = () => {
+          const ratio = videoEl.videoHeight / videoEl.videoWidth;
+          if (isRotated) {
+            planeEl.setAttribute('width', (1 / ratio).toFixed(4));
+            planeEl.setAttribute('height', '1');
+          } else {
+            planeEl.setAttribute('width', '1');
+            planeEl.setAttribute('height', ratio.toFixed(4));
+          }
+        };
+
+        if (videoEl.readyState >= 1) {
+          adjust();
+        } else {
+          videoEl.addEventListener('loadedmetadata', adjust, { once: true });
+        }
+      }
+
+      autoAdjustPlane(cardVid, cardPlane, true);
+      autoAdjustPlane(spiderVid, spiderPlane, false);
+
       startBtn.addEventListener('click', () => {
-        // Unlock autoplay permissions smoothly
         cardVid.play().then(() => cardVid.pause()).catch(() => {});
         spiderVid.play().then(() => spiderVid.pause()).catch(() => {});
         overlay.classList.add('hidden');
       });
 
-      // Target 0 (Card) Tracking Events
+      // Target 0 Event Hooks
       targetCard.addEventListener('targetFound', () => {
         cardVid.play();
-        statusText.textContent = 'Memory Playing';
+        statusText.textContent = 'Card Video Playing';
         statusDot.classList.add('active');
         reticle.classList.add('hidden');
       });
       targetCard.addEventListener('targetLost', () => {
         cardVid.pause();
-        statusText.textContent = 'Scanning for target...';
+        statusText.textContent = 'Scanning for target';
         statusDot.classList.remove('active');
         reticle.classList.remove('hidden');
       });
 
-      // Target 1 (Spider) Tracking Events
+      // Target 1 Event Hooks
       targetSpider.addEventListener('targetFound', () => {
         spiderVid.play();
         statusText.textContent = 'Spider Video Playing';
@@ -302,7 +345,7 @@
       });
       targetSpider.addEventListener('targetLost', () => {
         spiderVid.pause();
-        statusText.textContent = 'Scanning for target...';
+        statusText.textContent = 'Scanning for target';
         statusDot.classList.remove('active');
         reticle.classList.remove('hidden');
       });
