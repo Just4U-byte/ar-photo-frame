@@ -47,7 +47,7 @@
   <body>
     <div id="overlay">
       <button id="startBtn">Tap to Start AR</button>
-      <p id="promptText">Point at the card or spider image</p>
+      <p id="promptText">Grant camera permission when asked</p>
     </div>
 
     <a-scene
@@ -58,7 +58,7 @@
       device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
-        <!-- Card Deck Video -->
+        <!-- Landscape Animation Video (1920x1080) -->
         <video
           id="cardVid"
           src="./video.mp4"
@@ -69,7 +69,7 @@
           webkit-playsinline
         ></video>
 
-        <!-- Spider Video -->
+        <!-- Spider Video (1920x900) -->
         <video
           id="spiderVid"
           src="./spider.mp4"
@@ -83,26 +83,24 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Target 0: Queen Card (Image 1 in Compiler) -->
-      <!-- Height matches exact card proportions (1 : 1.58) -->
+      <!-- Target 0: Queen Card (Rotated 90 deg for Landscape Video) -->
       <a-entity id="targetCard" mindar-image-target="targetIndex: 0">
         <a-video
           src="#cardVid"
           position="0 0 0"
-          width="1"
-          height="1.58"
-          rotation="0 0 0"
+          width="1.58"
+          height="0.888"
+          rotation="0 0 -90"
         ></a-video>
       </a-entity>
 
-      <!-- Target 1: Spider Image (Image 2 in Compiler) -->
-      <!-- Height matches exact 16:9 frame (1 : 0.5625) -->
+      <!-- Target 1: Spider Target (Exact 1920x900 Aspect Ratio) -->
       <a-entity id="targetSpider" mindar-image-target="targetIndex: 1">
         <a-video
           src="#spiderVid"
           position="0 0 0"
           width="1"
-          height="0.5625"
+          height="0.46875"
           rotation="0 0 0"
         ></a-video>
       </a-entity>
@@ -123,11 +121,11 @@
         overlay.style.display = 'none';
       });
 
-      // Target 0 (Card) Event handlers
+      // Target 0: Queen Card Events
       targetCard.addEventListener('targetFound', () => cardVid.play());
       targetCard.addEventListener('targetLost', () => cardVid.pause());
 
-      // Target 1 (Spider) Event handlers
+      // Target 1: Spider Target Events
       targetSpider.addEventListener('targetFound', () => spiderVid.play());
       targetSpider.addEventListener('targetLost', () => spiderVid.pause());
     </script>
