@@ -1,22 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>AR Experience</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Spatial AR Experience</title>
     <!-- A-Frame 1.4.2 & MindAR 1.2.2 -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    <!-- SF Pro Display Fallback Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SF Pro Fallback / Modern Fluid Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
+      :root {
+        --liquid-blur: blur(48px) saturate(220%);
+        --glass-surface: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.28);
+        --glass-specular: rgba(255, 255, 255, 0.75);
+        --spring-curve: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
         user-select: none;
         -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
       }
+
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Plus Jakarta Sans', sans-serif;
         background-color: #000;
@@ -24,112 +41,124 @@
         color: #fff;
       }
 
-      /* iOS Liquid Crystal Blur Backdrop */
+      /* Liquid Glass Aurora Background */
       #overlay {
         position: fixed;
         inset: 0;
-        background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.65) 100%);
-        backdrop-filter: blur(35px) saturate(190%);
-        -webkit-backdrop-filter: blur(35px) saturate(190%);
+        background: radial-gradient(circle at 50% 10%, rgba(120, 119, 198, 0.18) 0%, transparent 60%),
+                    radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.12) 0%, transparent 50%),
+                    rgba(5, 7, 12, 0.7);
+        backdrop-filter: var(--liquid-blur);
+        -webkit-backdrop-filter: var(--liquid-blur);
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         z-index: 99999;
         padding: 24px;
-        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.6s var(--spring-curve), transform 0.6s var(--spring-curve), visibility 0.6s;
       }
+
       #overlay.hidden {
         opacity: 0;
-        transform: scale(1.04);
+        transform: scale(1.06);
+        visibility: hidden;
         pointer-events: none;
       }
 
-      /* iOS Floating Glass Card */
-      .glass-panel {
+      /* Specular Liquid Glass Modal Card */
+      .glass-modal {
         position: relative;
         width: 100%;
         max-width: 340px;
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(40px) saturate(200%);
-        -webkit-backdrop-filter: blur(40px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        border-top: 1.5px solid rgba(255, 255, 255, 0.65);
-        border-radius: 36px;
-        padding: 34px 26px 30px;
+        background: var(--glass-surface);
+        backdrop-filter: var(--liquid-blur);
+        -webkit-backdrop-filter: var(--liquid-blur);
+        border: 1px solid var(--glass-border);
+        border-top: 1.5px solid var(--glass-specular);
+        border-radius: 38px;
+        padding: 38px 28px 32px;
         text-align: center;
         box-shadow: 
-          0 30px 60px rgba(0, 0, 0, 0.4),
-          inset 0 1px 2px rgba(255, 255, 255, 0.4),
+          0 40px 80px rgba(0, 0, 0, 0.6),
+          inset 0 1px 2px rgba(255, 255, 255, 0.5),
           inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+        animation: floatCard 4s ease-in-out infinite;
       }
 
-      /* Glass Orb Icon */
-      .glass-orb {
-        width: 72px;
-        height: 72px;
+      @keyframes floatCard {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+      }
+
+      /* Refractive Glass Spatial Lens */
+      .spatial-orb {
+        width: 76px;
+        height: 76px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.05) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-top: 1.5px solid var(--glass-specular);
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 22px;
         box-shadow: 
-          0 15px 35px rgba(0, 0, 0, 0.25),
-          inset 0 2px 4px rgba(255, 255, 255, 0.6);
+          0 16px 36px rgba(0, 0, 0, 0.3),
+          inset 0 2px 4px rgba(255, 255, 255, 0.8);
       }
-      .glass-orb svg {
-        width: 32px;
-        height: 32px;
+
+      .spatial-orb svg {
+        width: 34px;
+        height: 34px;
         fill: none;
         stroke: #fff;
         stroke-width: 1.75;
         stroke-linecap: round;
         stroke-linejoin: round;
-        filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.4));
+        filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.5));
       }
 
       h1 {
-        font-size: 21px;
+        font-size: 22px;
         font-weight: 600;
-        letter-spacing: -0.4px;
-        color: #ffffff;
+        letter-spacing: -0.5px;
         margin-bottom: 8px;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
       }
+
       p.subtitle {
         color: rgba(255, 255, 255, 0.72);
         font-size: 13.5px;
-        line-height: 1.45;
+        line-height: 1.5;
         letter-spacing: -0.1px;
         margin-bottom: 28px;
       }
 
-      /* iOS Specular Glass Button */
+      /* Liquid Fluid Button */
       #startBtn {
         width: 100%;
         padding: 16px 20px;
-        font-size: 15px;
+        font-size: 15.5px;
         font-weight: 600;
-        letter-spacing: -0.2px;
+        letter-spacing: -0.3px;
         color: #000;
         background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
         border: none;
         border-radius: 22px;
         cursor: pointer;
         box-shadow: 
-          0 10px 25px rgba(0, 0, 0, 0.25),
-          0 2px 4px rgba(255, 255, 255, 0.8) inset;
-        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
-      }
-      #startBtn:active {
-        transform: scale(0.96);
-        opacity: 0.88;
+          0 12px 28px rgba(0, 0, 0, 0.35),
+          0 2px 4px rgba(255, 255, 255, 0.9) inset;
+        transition: transform 0.2s var(--spring-curve), opacity 0.2s;
       }
 
-      /* Dynamic Island Style HUD Status Pill */
+      #startBtn:active {
+        transform: scale(0.96);
+        opacity: 0.9;
+      }
+
+      /* Dynamic Island Fluid Pill */
       #hud {
         position: fixed;
         inset: 0;
@@ -139,107 +168,153 @@
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
-        padding: calc(env(safe-area-inset-top, 20px) + 12px) 20px 40px;
+        padding: calc(env(safe-area-inset-top, 20px) + 12px) 20px calc(env(safe-area-inset-bottom, 20px) + 24px);
       }
 
-      .island-pill {
+      .island-capsule {
         display: flex;
         align-items: center;
         gap: 10px;
-        background: rgba(20, 20, 25, 0.45);
-        backdrop-filter: blur(30px) saturate(180%);
-        -webkit-backdrop-filter: blur(30px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-top: 1.2px solid rgba(255, 255, 255, 0.45);
-        padding: 8px 18px;
+        background: rgba(18, 18, 24, 0.45);
+        backdrop-filter: var(--liquid-blur);
+        -webkit-backdrop-filter: var(--liquid-blur);
+        border: 1px solid var(--glass-border);
+        border-top: 1.2px solid var(--glass-specular);
+        padding: 9px 20px;
         border-radius: 40px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        transition: all 0.4s var(--spring-curve);
       }
-      .island-pill span {
-        font-size: 13px;
+
+      .island-capsule span {
+        font-size: 13.5px;
         font-weight: 500;
         letter-spacing: -0.2px;
         color: rgba(255, 255, 255, 0.95);
       }
 
-      /* Glass Orb Indicator Dot */
-      .dot {
+      /* Glowing Neon State Indicator */
+      .status-light {
         width: 7px;
         height: 7px;
         border-radius: 50%;
         background: #38bdf8;
-        box-shadow: 0 0 10px #38bdf8;
-        animation: breath 2s infinite ease-in-out;
-      }
-      .dot.active {
-        background: #4ade80;
-        box-shadow: 0 0 12px #4ade80;
-      }
-      @keyframes breath {
-        0%, 100% { opacity: 0.4; transform: scale(0.9); }
-        50% { opacity: 1; transform: scale(1.2); }
+        box-shadow: 0 0 12px #38bdf8;
+        animation: pulseLight 2s infinite ease-in-out;
+        transition: background 0.3s, box-shadow 0.3s;
       }
 
-      /* iOS Minimalist Target Brackets */
+      .status-light.active {
+        background: #4ade80;
+        box-shadow: 0 0 14px #4ade80;
+      }
+
+      @keyframes pulseLight {
+        0%, 100% { opacity: 0.5; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.15); }
+      }
+
+      /* Liquid Reticle Frame */
       #reticle {
         position: relative;
-        width: 210px;
-        height: 210px;
-        transition: opacity 0.4s ease, transform 0.4s ease;
+        width: 220px;
+        height: 220px;
+        transition: opacity 0.45s var(--spring-curve), transform 0.45s var(--spring-curve);
       }
+
       #reticle.hidden {
         opacity: 0;
-        transform: scale(0.92);
+        transform: scale(0.9);
       }
+
       .bracket {
         position: absolute;
-        width: 22px;
-        height: 22px;
-        border-color: rgba(255, 255, 255, 0.6);
+        width: 24px;
+        height: 24px;
+        border-color: rgba(255, 255, 255, 0.7);
         border-style: solid;
-        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
       }
-      .tl { top: 0; left: 0; border-width: 2.5px 0 0 2.5px; border-top-left-radius: 12px; }
-      .tr { top: 0; right: 0; border-width: 2.5px 2.5px 0 0; border-top-right-radius: 12px; }
-      .bl { bottom: 0; left: 0; border-width: 0 0 2.5px 2.5px; border-bottom-left-radius: 12px; }
-      .br { bottom: 0; right: 0; border-width: 0 2.5px 2.5px 0; border-bottom-right-radius: 12px; }
 
-      .crystal-scanner {
+      .tl { top: 0; left: 0; border-width: 2.5px 0 0 2.5px; border-top-left-radius: 14px; }
+      .tr { top: 0; right: 0; border-width: 2.5px 2.5px 0 0; border-top-right-radius: 14px; }
+      .bl { bottom: 0; left: 0; border-width: 0 0 2.5px 2.5px; border-bottom-left-radius: 14px; }
+      .br { bottom: 0; right: 0; border-width: 0 2.5px 2.5px 0; border-bottom-right-radius: 14px; }
+
+      .liquid-beam {
         position: absolute;
         inset: 4px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 80%);
-        border-radius: 8px;
-        animation: scanSweep 2.2s infinite ease-in-out;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 85%);
+        border-radius: 10px;
+        animation: beamSweep 2.4s infinite ease-in-out;
       }
-      @keyframes scanSweep {
-        0% { transform: translateY(-10%); opacity: 0.1; }
-        50% { transform: translateY(60%); opacity: 0.8; }
-        100% { transform: translateY(-10%); opacity: 0.1; }
+
+      @keyframes beamSweep {
+        0% { transform: translateY(-15%); opacity: 0; }
+        50% { transform: translateY(65%); opacity: 0.9; }
+        100% { transform: translateY(-15%); opacity: 0; }
+      }
+
+      /* Floating Bottom Quick Controls */
+      .quick-controls {
+        display: flex;
+        gap: 12px;
+        pointer-events: auto;
+      }
+
+      .glass-btn {
+        background: rgba(20, 20, 28, 0.45);
+        backdrop-filter: var(--liquid-blur);
+        -webkit-backdrop-filter: var(--liquid-blur);
+        border: 1px solid var(--glass-border);
+        border-top: 1px solid var(--glass-specular);
+        border-radius: 20px;
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s var(--spring-curve), background 0.2s;
+      }
+
+      .glass-btn:active {
+        transform: scale(0.9);
+      }
+
+      .glass-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
     </style>
   </head>
 
   <body>
-    <!-- iOS Specular Glass Launch Sheet -->
+    <!-- iOS Liquid Launch View -->
     <div id="overlay">
-      <div class="glass-panel">
-        <div class="glass-orb">
+      <div class="glass-modal">
+        <div class="spatial-orb">
           <svg viewBox="0 0 24 24">
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
           </svg>
         </div>
-        <h1>Spatial Memory</h1>
-        <p class="subtitle">Look at the framed photo to unlock spatial video playback.</p>
-        <button id="startBtn">Enter AR</button>
+        <h1>Spatial Experience</h1>
+        <p class="subtitle">Point your lens at any framed image to bring it to life instantly.</p>
+        <button id="startBtn">Enter AR Space</button>
       </div>
     </div>
 
-    <!-- iOS Dynamic Island HUD Layer -->
+    <!-- Liquid Island & Reticle HUD -->
     <div id="hud">
-      <div class="island-pill">
-        <div id="statusDot" class="dot"></div>
-        <span id="statusText">Scanning for target</span>
+      <div class="island-capsule">
+        <div id="statusLight" class="status-light"></div>
+        <span id="statusText">Scanning target...</span>
       </div>
 
       <div id="reticle">
@@ -247,12 +322,26 @@
         <div class="bracket tr"></div>
         <div class="bracket bl"></div>
         <div class="bracket br"></div>
-        <div class="crystal-scanner"></div>
+        <div class="liquid-beam"></div>
       </div>
 
-      <div></div>
+      <div class="quick-controls">
+        <button id="muteBtn" class="glass-btn" title="Toggle Mute">
+          <svg id="volumeIcon" viewBox="0 0 24 24">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+        </button>
+        <button id="replayBtn" class="glass-btn" title="Replay Video">
+          <svg viewBox="0 0 24 24">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </svg>
+        </button>
+      </div>
     </div>
 
+    <!-- Performance Hardware Accelerated A-Frame Scene -->
     <a-scene
       mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001; warmupTolerance: 1; missTolerance: 3;"
       color-space="sRGB"
@@ -267,14 +356,14 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Target 0 (Card: Landscape Rotated) -->
+      <!-- Target 0 (Card Target) -->
       <a-entity id="targetCard" mindar-image-target="targetIndex: 0">
-        <a-video id="cardVideoPlane" src="#cardVid" position="0 0 0" rotation="0 0 -90"></a-video>
+        <a-video id="cardPlane" src="#cardVid" position="0 0 0" rotation="0 0 -90"></a-video>
       </a-entity>
 
       <!-- Target 1 (Spider Target) -->
       <a-entity id="targetSpider" mindar-image-target="targetIndex: 1">
-        <a-video id="spiderVideoPlane" src="#spiderVid" position="0 0 0" rotation="0 0 0"></a-video>
+        <a-video id="spiderPlane" src="#spiderVid" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
     </a-scene>
 
@@ -282,22 +371,31 @@
       const overlay = document.getElementById('overlay');
       const startBtn = document.getElementById('startBtn');
       const statusText = document.getElementById('statusText');
-      const statusDot = document.getElementById('statusDot');
+      const statusLight = document.getElementById('statusLight');
       const reticle = document.getElementById('reticle');
+      const muteBtn = document.getElementById('muteBtn');
+      const replayBtn = document.getElementById('replayBtn');
+      const volumeIcon = document.getElementById('volumeIcon');
 
       const cardVid = document.getElementById('cardVid');
       const spiderVid = document.getElementById('spiderVid');
-      const cardPlane = document.getElementById('cardVideoPlane');
-      const spiderPlane = document.getElementById('spiderVideoPlane');
+      const cardPlane = document.getElementById('cardPlane');
+      const spiderPlane = document.getElementById('spiderPlane');
 
       const targetCard = document.getElementById('targetCard');
       const targetSpider = document.getElementById('targetSpider');
 
-      // Auto-Adjust Aspect Ratio Hook
-      function autoAdjustPlane(videoEl, planeEl, isRotated = false) {
-        const adjust = () => {
+      let currentActiveVideo = null;
+      let isMuted = false;
+
+      // Smart Auto-Fit Aspect Ratio Function
+      function autoFitBorder(videoEl, planeEl, isRotated = false) {
+        const adjustDimensions = () => {
+          if (!videoEl.videoWidth || !videoEl.videoHeight) return;
           const ratio = videoEl.videoHeight / videoEl.videoWidth;
+
           if (isRotated) {
+            // Auto swap plane for 90-degree rotated media
             planeEl.setAttribute('width', (1 / ratio).toFixed(4));
             planeEl.setAttribute('height', '1');
           } else {
@@ -307,47 +405,71 @@
         };
 
         if (videoEl.readyState >= 1) {
-          adjust();
+          adjustDimensions();
         } else {
-          videoEl.addEventListener('loadedmetadata', adjust, { once: true });
+          videoEl.addEventListener('loadedmetadata', adjustDimensions, { once: true });
         }
       }
 
-      autoAdjustPlane(cardVid, cardPlane, true);
-      autoAdjustPlane(spiderVid, spiderPlane, false);
+      // Initialize automatic border fitting
+      autoFitBorder(cardVid, cardPlane, true);
+      autoFitBorder(spiderVid, spiderPlane, false);
 
+      // Start AR Session
       startBtn.addEventListener('click', () => {
         cardVid.play().then(() => cardVid.pause()).catch(() => {});
         spiderVid.play().then(() => spiderVid.pause()).catch(() => {});
         overlay.classList.add('hidden');
       });
 
-      // Target 0 Event Hooks
+      // Target 0 Tracking
       targetCard.addEventListener('targetFound', () => {
+        currentActiveVideo = cardVid;
         cardVid.play();
-        statusText.textContent = 'Card Video Playing';
-        statusDot.classList.add('active');
+        statusText.textContent = 'Playing Card Frame';
+        statusLight.classList.add('active');
         reticle.classList.add('hidden');
       });
       targetCard.addEventListener('targetLost', () => {
         cardVid.pause();
-        statusText.textContent = 'Scanning for target';
-        statusDot.classList.remove('active');
+        if (currentActiveVideo === cardVid) currentActiveVideo = null;
+        statusText.textContent = 'Scanning target...';
+        statusLight.classList.remove('active');
         reticle.classList.remove('hidden');
       });
 
-      // Target 1 Event Hooks
+      // Target 1 Tracking
       targetSpider.addEventListener('targetFound', () => {
+        currentActiveVideo = spiderVid;
         spiderVid.play();
-        statusText.textContent = 'Spider Video Playing';
-        statusDot.classList.add('active');
+        statusText.textContent = 'Playing Spider Frame';
+        statusLight.classList.add('active');
         reticle.classList.add('hidden');
       });
       targetSpider.addEventListener('targetLost', () => {
         spiderVid.pause();
-        statusText.textContent = 'Scanning for target';
-        statusDot.classList.remove('active');
+        if (currentActiveVideo === spiderVid) currentActiveVideo = null;
+        statusText.textContent = 'Scanning target...';
+        statusLight.classList.remove('active');
         reticle.classList.remove('hidden');
+      });
+
+      // Quick Controls: Mute Toggle
+      muteBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        cardVid.muted = isMuted;
+        spiderVid.muted = isMuted;
+        volumeIcon.innerHTML = isMuted
+          ? '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'
+          : '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>';
+      });
+
+      // Quick Controls: Replay Active Video
+      replayBtn.addEventListener('click', () => {
+        if (currentActiveVideo) {
+          currentActiveVideo.currentTime = 0;
+          currentActiveVideo.play();
+        }
       });
     </script>
   </body>
